@@ -1,44 +1,45 @@
-const express = require('express');
-const path = require('path');
-const fs = require('fs');
-const app = express();
-const port = process.env.PORT || 3000;
-
-// Serve static files
-app.use(express.static(__dirname));
-app.use(express.json());
-
-// Serve pages from the pages directory
-app.use('/pages', express.static(path.join(__dirname, 'pages')));
-
-// API endpoint to save pages to actual files
-app.post('/api/save-page', (req, res) => {
-    const { title, url, category, customCategory, htmlContent } = req.body;
+export default {
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url);
     
-    if (!title || !url || !htmlContent) {
-        return res.status(400).json({ error: 'Missing required fields' });
+    // Serve static files
+    if (url.pathname === '/') {
+      const response = await fetch(new URL('./index.html', import.meta.url));
+      return new Response(response.body, {
+        headers: { 'content-type': 'text/html' },
+      });
     }
-    
-    // Create directory for the category if it doesn't exist
-    const categoryPath = category === 'custom' ? customCategory : category;
-    const dirPath = path.join(__dirname, 'pages', categoryPath);
-    
-    if (!fs.existsSync(dirPath)) {
-        fs.mkdirSync(dirPath, { recursive: true });
+
+    if (url.pathname.startsWith('/pages/')) {
+      const response = await fetch(new URL('.' + url.pathname, import.meta.url));
+      return new Response(response.body, {
+        headers: { 'content-type': 'text/html' },
+      });
     }
-    
-    // Write the HTML file
-    const filePath = path.join(dirPath, `${url}.html`);
-    fs.writeFileSync(filePath, htmlContent);
-    
-    res.json({ success: true, path: `/pages/${categoryPath}/${url}.html` });
-});
 
-// Create pages directory if it doesn't exist
-if (!fs.existsSync(path.join(__dirname, 'pages'))) {
-    fs.mkdirSync(path.join(__dirname, 'pages'));
-}
+    if (url.pathname === '/api/save-page' && request.method === 'POST') {
+      const data = await request.json();
+      const { title, url: pageUrl, category, customCategory, htmlContent } = data;
+      
+      if (!title || !pageUrl || !htmlContent) {
+        return new Response(JSON.stringify({ error: 'Missing required fields' }), {
+          status: 400,
+          headers: { 'content-type': 'application/json' },
+        });
+      }
 
-app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
-});
+      // Store in KV (you'll need to set up KV namespace in Cloudflare)
+      const categoryPath = category === 'custom' ? customCategory : category;
+      const path = `/pages/${categoryPath}/${pageUrl}.html`;
+      
+      return new Response(JSON.stringify({ 
+        success: true, 
+        path: path 
+      }), {
+        headers: { 'content-type': 'application/json' },
+      });
+    }
+
+    return new Response('Not Found', { status: 404 });
+  },
+};
