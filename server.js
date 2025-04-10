@@ -26,6 +26,7 @@ export default {
                 <button class="tab-btn active" data-tab="editor">محرر الصفحات</button>
                 <button class="tab-btn" data-tab="pages">صفحاتي</button>
                 <button class="tab-btn" data-tab="templates">قوالب جاهزة</button>
+                <button class="tab-btn" data-tab="code-viewer">عارض الأكواد</button>
                 <button class="tab-btn" data-tab="analytics">التحليلات</button>
             </div>
         </header>
@@ -218,6 +219,70 @@ export default {
                     </table>
                 </div>
             </div>
+            
+            <div id="code-viewer-tab" class="tab-content">
+                <h2>عارض الأكواد متعددة الصفحات</h2>
+                <p class="intro-text">رفع ملف مضغوط يحتوي على أكواد متعددة الصفحات وعرضها بشكل مرئي.</p>
+                
+                <div class="code-uploader-card">
+                    <div class="upload-area" id="upload-area">
+                        <div class="upload-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        </div>
+                        <h3>اسحب الملف المضغوط هنا</h3>
+                        <p>أو</p>
+                        <label for="zip-file-input" class="btn primary">اختر ملف</label>
+                        <input type="file" id="zip-file-input" accept=".zip" style="display: none;" />
+                        <p class="hint">الحد الأقصى لحجم الملف: 10 ميغابايت</p>
+                    </div>
+                    
+                    <div class="zip-processing" id="zip-processing" style="display: none;">
+                        <div class="spinner"></div>
+                        <p>جاري معالجة الملف...</p>
+                    </div>
+                </div>
+                
+                <div class="code-viewer-container" id="code-viewer-container" style="display: none;">
+                    <div class="code-viewer-header">
+                        <h3 id="project-name">اسم المشروع</h3>
+                        <div class="code-viewer-actions">
+                            <button id="generate-preview-btn" class="btn success">إنشاء معاينة</button>
+                            <button id="save-as-page-btn" class="btn primary">حفظ كصفحة</button>
+                            <button id="save-project-btn" class="btn primary">حفظ المشروع</button>
+                            <button id="close-viewer-btn" class="btn danger">إغلاق</button>
+                        </div>
+                    </div>
+                    
+                    <div class="code-viewer-content">
+                        <div class="file-explorer">
+                            <h4>ملفات المشروع</h4>
+                            <div class="file-tree" id="file-tree"></div>
+                        </div>
+                        
+                        <div class="code-display">
+                            <div class="code-display-header">
+                                <div id="current-file-path">لم يتم اختيار ملف</div>
+                                <div class="code-display-actions">
+                                    <button id="copy-code-btn" class="btn small">نسخ الكود</button>
+                                </div>
+                            </div>
+                            <div class="code-editor-container" id="code-editor-container"></div>
+                        </div>
+                        
+                        <div class="preview-panel">
+                            <h4>المعاينة</h4>
+                            <div class="preview-iframe-container">
+                                <iframe id="preview-iframe" sandbox="allow-scripts"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="saved-projects" id="saved-projects">
+                    <h3>المشاريع المحفوظة</h3>
+                    <div class="projects-grid" id="projects-grid"></div>
+                </div>
+            </div>
         </main>
     </div>
     
@@ -226,6 +291,7 @@ export default {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/xml/xml.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="/script.js?v=${version}"></script>
 </body>
 </html>
@@ -707,6 +773,287 @@ main {
     display: flex;
     gap: 0.5rem;
     margin-top: 1rem;
+}
+
+/* Code Viewer Styles */
+.intro-text {
+    margin-bottom: 1.5rem;
+    color: #666;
+}
+
+.code-uploader-card {
+    background: white;
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    margin-bottom: 2rem;
+}
+
+.upload-area {
+    border: 2px dashed #ddd;
+    border-radius: 6px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.upload-area:hover {
+    border-color: var(--primary-color);
+    background-color: rgba(52, 152, 219, 0.05);
+}
+
+.upload-area.dragover {
+    border-color: var(--primary-color);
+    background-color: rgba(52, 152, 219, 0.1);
+}
+
+.upload-icon {
+    color: #999;
+    margin-bottom: 1rem;
+}
+
+.upload-area h3 {
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.upload-area p {
+    margin-bottom: 1rem;
+    color: #666;
+}
+
+.upload-area .hint {
+    font-size: 0.8rem;
+    color: #999;
+    margin-top: 1rem;
+}
+
+.zip-processing {
+    text-align: center;
+    padding: 2rem;
+}
+
+.spinner {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top-color: var(--primary-color);
+    animation: spin 1s ease-in-out infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.code-viewer-container {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    margin-bottom: 2rem;
+}
+
+.code-viewer-header {
+    padding: 1rem;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.code-viewer-header h3 {
+    margin: 0;
+    color: var(--dark-color);
+}
+
+.code-viewer-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.code-viewer-content {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    grid-template-rows: 1fr;
+    height: 600px;
+}
+
+.file-explorer {
+    border-right: 1px solid #ddd;
+    padding: 1rem;
+    overflow-y: auto;
+    background-color: #f8f9fa;
+}
+
+.file-explorer h4 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: var(--dark-color);
+}
+
+.file-tree {
+    font-family: monospace;
+    line-height: 1.5;
+}
+
+.file-tree-item {
+    padding: 0.3rem 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.file-tree-item:hover {
+    color: var(--primary-color);
+}
+
+.file-tree-item.selected {
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+.file-tree-icon {
+    margin-left: 0.5rem;
+    width: 16px;
+    display: inline-block;
+    text-align: center;
+}
+
+.file-tree-folder > .file-tree-item {
+    font-weight: bold;
+}
+
+.file-tree-folder-content {
+    padding-right: 1.5rem;
+}
+
+.code-display {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.code-display-header {
+    padding: 0.8rem;
+    background-color: #f1f1f1;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#current-file-path {
+    font-family: monospace;
+    color: #666;
+}
+
+.btn.small {
+    padding: 0.3rem 0.8rem;
+    font-size: 0.8rem;
+}
+
+.code-editor-container {
+    flex: 1;
+    overflow: hidden;
+}
+
+.preview-panel {
+    border-right: 1px solid #ddd;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.preview-panel h4 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: var(--dark-color);
+}
+
+.preview-iframe-container {
+    flex: 1;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+#preview-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background-color: white;
+}
+
+.saved-projects {
+    margin-top: 2rem;
+}
+
+.saved-projects h3 {
+    margin-bottom: 1rem;
+    color: var(--dark-color);
+}
+
+.projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.project-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    border: 1px solid #ddd;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.project-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.project-card h4 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    color: var(--dark-color);
+}
+
+.project-card p {
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.project-card-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+/* Responsive Code Viewer */
+@media (max-width: 992px) {
+    .code-viewer-content {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+    }
+    
+    .file-explorer {
+        border-right: none;
+        border-bottom: 1px solid #ddd;
+        max-height: 200px;
+    }
+    
+    .preview-panel {
+        display: none;
+    }
 }
         `, {
           headers: { 'Content-Type': 'text/css' },
@@ -1260,6 +1607,549 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize the app
     loadSavedPages();
+
+    // Code Viewer Functionality
+    if (window.JSZip) {
+        initializeCodeViewer();
+    } else {
+        // Load JSZip library if not already loaded
+        const jsZipScript = document.createElement('script');
+        jsZipScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+        jsZipScript.onload = initializeCodeViewer;
+        document.head.appendChild(jsZipScript);
+    }
+    
+    function initializeCodeViewer() {
+        const uploadArea = document.getElementById('upload-area');
+        const zipFileInput = document.getElementById('zip-file-input');
+        const zipProcessing = document.getElementById('zip-processing');
+        const codeViewerContainer = document.getElementById('code-viewer-container');
+        const fileTree = document.getElementById('file-tree');
+        const projectName = document.getElementById('project-name');
+        const currentFilePath = document.getElementById('current-file-path');
+        const codeEditorContainer = document.getElementById('code-editor-container');
+        const previewIframe = document.getElementById('preview-iframe');
+        const closeViewerBtn = document.getElementById('close-viewer-btn');
+        const copyCodeBtn = document.getElementById('copy-code-btn');
+        const generatePreviewBtn = document.getElementById('generate-preview-btn');
+        const saveAsPageBtn = document.getElementById('save-as-page-btn');
+        const projectsGrid = document.getElementById('projects-grid');
+        
+        let currentProject = {
+            name: '',
+            files: {},
+            mainFile: null
+        };
+        
+        let codeEditor = null;
+        
+        // Initialize CodeMirror if not already initialized
+        function initializeCodeEditor() {
+            if (!codeEditor) {
+                const editorElement = document.createElement('textarea');
+                codeEditorContainer.appendChild(editorElement);
+                
+                codeEditor = CodeMirror.fromTextArea(editorElement, {
+                    lineNumbers: true,
+                    theme: 'monokai',
+                    mode: 'htmlmixed',
+                    readOnly: true,
+                    viewportMargin: Infinity
+                });
+            }
+        }
+        
+        // Handle drag and drop events
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', function() {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            if (e.dataTransfer.files.length) {
+                processZipFile(e.dataTransfer.files[0]);
+            }
+        });
+        
+        uploadArea.addEventListener('click', function() {
+            zipFileInput.click();
+        });
+        
+        zipFileInput.addEventListener('change', function() {
+            if (zipFileInput.files.length) {
+                processZipFile(zipFileInput.files[0]);
+            }
+        });
+        
+        function processZipFile(file) {
+            if (file.size > 10 * 1024 * 1024) { // 10MB
+                alert('حجم الملف كبير جداً. الحد الأقصى هو 10 ميغابايت.');
+                return;
+            }
+            
+            if (file.type !== 'application/zip' && !file.name.endsWith('.zip')) {
+                alert('يرجى اختيار ملف مضغوط بصيغة ZIP.');
+                return;
+            }
+            
+            uploadArea.style.display = 'none';
+            zipProcessing.style.display = 'block';
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const zip = new JSZip();
+                zip.loadAsync(e.target.result)
+                    .then(function(zip) {
+                        currentProject = {
+                            name: file.name.replace('.zip', ''),
+                            files: {},
+                            mainFile: null
+                        };
+                        
+                        projectName.textContent = currentProject.name;
+                        
+                        const promises = [];
+                        
+                        // Process all files
+                        zip.forEach(function(relativePath, zipEntry) {
+                            if (!zipEntry.dir) {
+                                promises.push(
+                                    zipEntry.async('text').then(function(content) {
+                                        currentProject.files[relativePath] = {
+                                            name: relativePath.split('/').pop(),
+                                            path: relativePath,
+                                            content: content,
+                                            extension: relativePath.split('.').pop().toLowerCase()
+                                        };
+                                        
+                                        // Try to find main HTML file
+                                        if (
+                                            !currentProject.mainFile && 
+                                            (relativePath.endsWith('index.html') || relativePath.endsWith('.html'))
+                                        ) {
+                                            currentProject.mainFile = relativePath;
+                                        }
+                                    })
+                                );
+                            }
+                        });
+                        
+                        Promise.all(promises).then(function() {
+                            buildFileTree();
+                            zipProcessing.style.display = 'none';
+                            codeViewerContainer.style.display = 'block';
+                            
+                            // Initialize code editor
+                            initializeCodeEditor();
+                            
+                            // Display main file if found
+                            if (currentProject.mainFile) {
+                                displayFile(currentProject.mainFile);
+                            }
+                        });
+                    })
+                    .catch(function(error) {
+                        console.error('Error processing ZIP file:', error);
+                        zipProcessing.style.display = 'none';
+                        uploadArea.style.display = 'block';
+                        alert('حدث خطأ أثناء معالجة الملف المضغوط. يرجى التأكد من أن الملف بصيغة ZIP صحيحة.');
+                    });
+            };
+            reader.readAsArrayBuffer(file);
+        }
+        
+        function buildFileTree() {
+            fileTree.innerHTML = '';
+            
+            // Create a virtual file system
+            const virtualFs = {};
+            
+            // Organize files into folders
+            Object.keys(currentProject.files).forEach(path => {
+                const parts = path.split('/');
+                let current = virtualFs;
+                
+                for (let i = 0; i < parts.length - 1; i++) {
+                    const part = parts[i];
+                    if (!current[part]) {
+                        current[part] = {};
+                    }
+                    current = current[part];
+                }
+                
+                const fileName = parts[parts.length - 1];
+                current[fileName] = path;
+            });
+            
+            // Generate HTML for file tree
+            function generateFileTreeHtml(obj, basePath = '') {
+                const fileList = document.createElement('div');
+                fileList.className = 'file-tree-list';
+                
+                // Sort files and folders
+                const items = Object.keys(obj).sort((a, b) => {
+                    const aIsDir = typeof obj[a] === 'object';
+                    const bIsDir = typeof obj[b] === 'object';
+                    if (aIsDir && !bIsDir) return -1;
+                    if (!aIsDir && bIsDir) return 1;
+                    return a.localeCompare(b);
+                });
+                
+                items.forEach(item => {
+                    const isDir = typeof obj[item] === 'object';
+                    const itemPath = basePath + item;
+                    
+                    if (isDir) {
+                        // Folder
+                        const folderEl = document.createElement('div');
+                        folderEl.className = 'file-tree-folder';
+                        
+                        const folderItem = document.createElement('div');
+                        folderItem.className = 'file-tree-item';
+                        folderItem.innerHTML = `
+                            <span class="file-tree-icon">📁</span>
+                            <span>${item}</span>
+                        `;
+                        
+                        const folderContent = document.createElement('div');
+                        folderContent.className = 'file-tree-folder-content';
+                        folderContent.style.display = 'none';
+                        
+                        // Generate content
+                        folderContent.appendChild(generateFileTreeHtml(obj[item], itemPath + '/'));
+                        
+                        // Toggle folder on click
+                        folderItem.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            folderContent.style.display = folderContent.style.display === 'none' ? 'block' : 'none';
+                            folderItem.querySelector('.file-tree-icon').textContent = 
+                                folderContent.style.display === 'none' ? '📁' : '📂';
+                        });
+                        
+                        folderEl.appendChild(folderItem);
+                        folderEl.appendChild(folderContent);
+                        fileList.appendChild(folderEl);
+                    } else {
+                        // File
+                        const fileEl = document.createElement('div');
+                        fileEl.className = 'file-tree-item';
+                        fileEl.setAttribute('data-path', obj[item]);
+                        
+                        // Determine icon based on file extension
+                        let fileIcon = '📄';
+                        const extension = item.split('.').pop().toLowerCase();
+                        if (extension === 'html') fileIcon = '🌐';
+                        else if (extension === 'css') fileIcon = '🎨';
+                        else if (extension === 'js') fileIcon = '⚙️';
+                        else if (['jpg', 'jpeg', 'png', 'gif', 'svg'].includes(extension)) fileIcon = '🖼️';
+                        
+                        fileEl.innerHTML = `
+                            <span class="file-tree-icon">${fileIcon}</span>
+                            <span>${item}</span>
+                        `;
+                        
+                        fileEl.addEventListener('click', function() {
+                            displayFile(obj[item]);
+                            
+                            // Remove selected class from all items
+                            document.querySelectorAll('.file-tree-item').forEach(item => {
+                                item.classList.remove('selected');
+                            });
+                            
+                            // Add selected class to current item
+                            fileEl.classList.add('selected');
+                        });
+                        
+                        fileList.appendChild(fileEl);
+                    }
+                });
+                
+                return fileList;
+            }
+            
+            fileTree.appendChild(generateFileTreeHtml(virtualFs));
+        }
+        
+        function displayFile(path) {
+            const file = currentProject.files[path];
+            if (!file) return;
+            
+            currentFilePath.textContent = path;
+            
+            // Initialize code editor if not already initialized
+            initializeCodeEditor();
+            
+            // Update editor mode based on file extension
+            let mode = 'text/plain';
+            switch (file.extension) {
+                case 'html':
+                    mode = 'htmlmixed';
+                    break;
+                case 'css':
+                    mode = 'css';
+                    break;
+                case 'js':
+                    mode = 'javascript';
+                    break;
+                case 'json':
+                    mode = 'application/json';
+                    break;
+                case 'md':
+                    mode = 'markdown';
+                    break;
+            }
+            
+            codeEditor.setOption('mode', mode);
+            codeEditor.setValue(file.content);
+            
+            // Auto refresh to adjust to container size
+            setTimeout(() => {
+                codeEditor.refresh();
+            }, 100);
+            
+            // Only preview HTML files automatically
+            if (file.extension === 'html') {
+                generatePreview(file.content);
+            }
+        }
+        
+        function generatePreview(htmlContent) {
+            // Create blob URL for the HTML content
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            
+            // Set iframe src to blob URL
+            previewIframe.src = url;
+            
+            // Revoke blob URL when iframe loads to avoid memory leaks
+            previewIframe.onload = function() {
+                URL.revokeObjectURL(url);
+            };
+        }
+        
+        // Handle code editor actions
+        copyCodeBtn.addEventListener('click', function() {
+            const code = codeEditor.getValue();
+            navigator.clipboard.writeText(code).then(function() {
+                alert('تم نسخ الكود بنجاح');
+            }).catch(function() {
+                alert('حدث خطأ أثناء نسخ الكود');
+            });
+        });
+        
+        // Handle generate preview button
+        generatePreviewBtn.addEventListener('click', function() {
+            const code = codeEditor.getValue();
+            generatePreview(code);
+        });
+        
+        // Handle save as page button
+        saveAsPageBtn.addEventListener('click', function() {
+            const file = currentProject.files[currentFilePath.textContent];
+            if (!file) return;
+            
+            // Switch to editor tab
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            document.querySelector('[data-tab="editor"]').classList.add('active');
+            document.getElementById('editor-tab').classList.add('active');
+            
+            // Fill editor fields
+            const fileName = file.name.replace(/\..+$/, '');
+            
+            // Set page title
+            pageTitle.value = currentProject.name + ' - ' + fileName;
+            
+            // Set page URL
+            pageUrl.value = fileName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            
+            // Set page content
+            htmlEditor.setValue(file.content);
+            
+            // Preview content
+            const frameDoc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+            frameDoc.open();
+            frameDoc.write(file.content);
+            frameDoc.close();
+            
+            // Alert user
+            alert('تم نقل المحتوى إلى محرر الصفحات. يمكنك الآن تعديله وحفظه كصفحة جديدة.');
+        });
+        
+        // Handle close viewer button
+        closeViewerBtn.addEventListener('click', function() {
+            codeViewerContainer.style.display = 'none';
+            uploadArea.style.display = 'block';
+            zipFileInput.value = '';
+            currentProject = { name: '', files: {}, mainFile: null };
+            
+            // Clear file tree and code editor
+            fileTree.innerHTML = '';
+            if (codeEditor) {
+                codeEditor.setValue('');
+            }
+            currentFilePath.textContent = 'لم يتم اختيار ملف';
+            projectName.textContent = 'اسم المشروع';
+        });
+        
+        // Load saved projects
+        loadSavedProjects();
+        
+        function loadSavedProjects() {
+            const projects = JSON.parse(localStorage.getItem('code-projects') || '[]');
+            
+            if (projects.length === 0) {
+                projectsGrid.innerHTML = '<div class="empty-state"><p>لا توجد مشاريع محفوظة حتى الآن.</p></div>';
+                return;
+            }
+            
+            let html = '';
+            projects.forEach(project => {
+                const date = new Date(project.date);
+                html += `
+                    <div class="project-card">
+                        <h4>${project.name}</h4>
+                        <p>عدد الملفات: ${Object.keys(project.files).length}</p>
+                        <p>تاريخ الحفظ: ${date.toLocaleDateString('ar-SA')}</p>
+                        <div class="project-card-actions">
+                            <button class="btn primary" onclick="loadProject('${project.id}')">فتح</button>
+                            <button class="btn danger" onclick="deleteProject('${project.id}')">حذف</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            projectsGrid.innerHTML = html;
+        }
+        
+        // Save project function
+        window.saveProject = function() {
+            if (!currentProject.name || Object.keys(currentProject.files).length === 0) {
+                alert('لا يوجد مشروع مفتوح لحفظه.');
+                return;
+            }
+            
+            // Create a copy of the project without circular references
+            const projectToSave = {
+                id: currentProject.id || generateUniqueId(),
+                name: currentProject.name,
+                date: new Date().toISOString(),
+                files: {},
+                mainFile: currentProject.mainFile
+            };
+            
+            // Copy files
+            Object.keys(currentProject.files).forEach(path => {
+                projectToSave.files[path] = {
+                    name: currentProject.files[path].name,
+                    path: currentProject.files[path].path,
+                    content: currentProject.files[path].content,
+                    extension: currentProject.files[path].extension
+                };
+            });
+            
+            // Save to localStorage
+            const projects = JSON.parse(localStorage.getItem('code-projects') || '[]');
+            
+            // Check if project already exists
+            const existingIndex = projects.findIndex(p => p.id === projectToSave.id);
+            if (existingIndex !== -1) {
+                projects[existingIndex] = projectToSave;
+            } else {
+                projects.push(projectToSave);
+            }
+            
+            localStorage.setItem('code-projects', JSON.stringify(projects));
+            
+            // Update current project ID
+            currentProject.id = projectToSave.id;
+            
+            // Reload saved projects
+            loadSavedProjects();
+            
+            alert('تم حفظ المشروع بنجاح.');
+        };
+        
+        // Load project function
+        window.loadProject = function(projectId) {
+            const projects = JSON.parse(localStorage.getItem('code-projects') || '[]');
+            const project = projects.find(p => p.id === projectId);
+            
+            if (!project) {
+                alert('لم يتم العثور على المشروع.');
+                return;
+            }
+            
+            // Set current project
+            currentProject = {
+                id: project.id,
+                name: project.name,
+                files: {},
+                mainFile: project.mainFile
+            };
+            
+            // Copy files
+            Object.keys(project.files).forEach(path => {
+                currentProject.files[path] = {
+                    name: project.files[path].name,
+                    path: project.files[path].path,
+                    content: project.files[path].content,
+                    extension: project.files[path].extension
+                };
+            });
+            
+            // Update UI
+            projectName.textContent = currentProject.name;
+            uploadArea.style.display = 'none';
+            codeViewerContainer.style.display = 'block';
+            
+            // Initialize code editor
+            initializeCodeEditor();
+            
+            // Build file tree
+            buildFileTree();
+            
+            // Display main file if available
+            if (currentProject.mainFile) {
+                displayFile(currentProject.mainFile);
+            } else if (Object.keys(currentProject.files).length > 0) {
+                displayFile(Object.keys(currentProject.files)[0]);
+            }
+        };
+        
+        // Delete project function
+        window.deleteProject = function(projectId) {
+            if (!confirm('هل أنت متأكد من حذف هذا المشروع؟')) {
+                return;
+            }
+            
+            const projects = JSON.parse(localStorage.getItem('code-projects') || '[]');
+            const filteredProjects = projects.filter(p => p.id !== projectId);
+            
+            localStorage.setItem('code-projects', JSON.stringify(filteredProjects));
+            
+            // Reload saved projects
+            loadSavedProjects();
+            
+            // If current project is the one being deleted, close it
+            if (currentProject.id === projectId) {
+                closeViewerBtn.click();
+            }
+        };
+        
+        // Generate unique ID
+        function generateUniqueId() {
+            return Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
+        }
+    }
 });
         `, {
           headers: { 'Content-Type': 'application/javascript' },
