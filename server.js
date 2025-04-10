@@ -66,6 +66,14 @@ export default {
                     </div>
                     
                     <div class="form-group">
+                        <label for="page-privacy">خصوصية الصفحة:</label>
+                        <select id="page-privacy">
+                            <option value="public">عامة (مرئية للجميع)</option>
+                            <option value="private">خاصة (فقط من لديه الرابط)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
                         <label for="html-editor">أدخل كود HTML:</label>
                         <textarea id="html-editor"></textarea>
                     </div>
@@ -629,6 +637,77 @@ main {
         grid-template-columns: repeat(2, 1fr);
     }
 }
+
+.page-privacy {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: bold;
+}
+
+.page-privacy.public {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+.page-privacy.private {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.page-card h3 {
+    margin-bottom: 0.5rem;
+    color: var(--dark-color);
+}
+
+.page-card p {
+    margin-bottom: 0.3rem;
+    color: #555;
+}
+
+.page-card .page-link {
+    margin: 8px 0;
+    font-size: 0.9rem;
+    word-break: break-all;
+    display: flex;
+    align-items: center;
+}
+
+.page-card .page-link a {
+    color: #3498db;
+    text-decoration: none;
+    margin-left: 8px;
+}
+
+.page-card .page-link .copy-link {
+    background-color: #f1f1f1;
+    border: none;
+    color: #333;
+    padding: 3px 8px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.page-card .page-link .copy-link:hover {
+    background-color: #e1e1e1;
+}
+
+.page-views {
+    font-size: 0.8rem;
+    color: #777;
+    margin-top: 6px;
+}
+
+.page-card .page-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
         `, {
           headers: { 'Content-Type': 'text/css' },
         });
@@ -663,7 +742,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Add active class to current tab
             button.classList.add('active');
-            document.getElementById(\`\${tabName}-tab\`).classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
             
             // Load data for specific tabs
             if (tabName === 'pages') {
@@ -704,6 +783,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const pageTitle = document.getElementById('page-title');
     const pageUrl = document.getElementById('page-url');
     const pageStatus = document.getElementById('page-status');
+    const pagePrivacy = document.getElementById('page-privacy');
     
     let currentEditingId = null;
     
@@ -719,11 +799,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         const formData = {
-            id: currentEditingId,
+            id: currentEditingId || generateUniqueId(),
             title: pageTitle.value,
             url: pageUrl.value,
             category: categorySelect.value === 'custom' ? customCategoryInput.value : categorySelect.value,
             published: pageStatus.value === 'published',
+            privacy: pagePrivacy.value,
             htmlContent: htmlEditor.getValue(),
             updatedAt: new Date().toISOString()
         };
@@ -741,7 +822,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             } else {
                 // Add new page
-                formData.id = Date.now().toString();
                 formData.views = 0;
                 pages.push(formData);
             }
@@ -776,6 +856,7 @@ document.addEventListener('DOMContentLoaded', function() {
         categorySelect.selectedIndex = 0;
         customCategoryInput.style.display = 'none';
         pageStatus.selectedIndex = 0;
+        pagePrivacy.selectedIndex = 0;
         htmlEditor.setValue('');
         
         const frameDoc = previewFrame.contentDocument || previewFrame.contentWindow.document;
@@ -956,41 +1037,46 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Load saved pages
+    // Function to load and display saved pages
     function loadSavedPages() {
-        const pagesList = document.getElementById('pages-list');
+        const pagesContainer = document.getElementById('pages-list');
         const pages = JSON.parse(localStorage.getItem('pages') || '[]');
         
         if (pages.length === 0) {
-            pagesList.innerHTML = '<div class="empty-state"><p>لا توجد صفحات محفوظة حتى الآن</p><p>أنشئ أول صفحة وانطلق نحو النجاح!</p></div>';
+            pagesContainer.innerHTML = '<div class="empty-state"><p>لا توجد صفحات محفوظة بعد.</p><p>قم بإنشاء صفحة جديدة من تبويب المحرر.</p></div>';
             return;
         }
         
-        let html = '';
-        
-        pages.forEach(page => {
-            html += \`
-                <div class="page-card">
-                    <div class="page-status \${page.published ? 'published' : 'draft'}">
-                        \${page.published ? 'منشور' : 'مسودة'}
-                    </div>
-                    <h3>\${page.title}</h3>
-                    <p>المسار: \${page.url}</p>
-                    <p>التصنيف: \${page.category}</p>
-                    <p style="margin-top:0.5rem;font-size:0.8rem;color:#666">
-                        <span>الزيارات: \${page.views || 0}</span> | 
-                        <span>تحديث: \${new Date(page.updatedAt).toLocaleDateString('ar-SA')}</span>
-                    </p>
-                    <div class="page-actions">
-                        <button onclick="editPage('\${page.id}')" class="btn primary">تعديل</button>
-                        <button onclick="previewPage('\${page.id}')" class="btn success">معاينة</button>
-                        <button onclick="deletePage('\${page.id}')" class="btn danger">حذف</button>
-                    </div>
+        const pagesHTML = pages.map(page => {
+            const date = new Date(page.updatedAt);
+            const formattedDate = date.toLocaleDateString('ar-SA');
+            const privacyLabel = page.privacy === 'private' ? 'خاص' : 'عام';
+            const privacyClass = page.privacy === 'private' ? 'private' : 'public';
+            const statusClass = page.published ? 'published' : 'draft';
+            const statusLabel = page.published ? 'منشور' : 'مسودة';
+            
+            return \`
+            <div class="page-card">
+                <div class="page-status \${statusClass}">\${statusLabel}</div>
+                <h3>\${page.title}</h3>
+                <p><strong>القسم:</strong> \${page.category}</p>
+                <p><strong>تاريخ التحديث:</strong> \${formattedDate}</p>
+                <p><strong>الخصوصية:</strong> <span class="privacy \${privacyClass}">\${privacyLabel}</span></p>
+                <div class="page-views">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    \${page.views || 0} مشاهدة
                 </div>
+                <div class="page-actions">
+                    <button class="btn" onclick="previewPage('\${page.id}')">معاينة</button>
+                    <button class="btn success" onclick="editPage('\${page.id}')">تعديل</button>
+                    <button class="btn danger" onclick="deletePage('\${page.id}')">حذف</button>
+                    <button class="btn" onclick="copyPageLink('\${page.id}')">نسخ الرابط الدائم</button>
+                </div>
+            </div>
             \`;
-        });
+        }).join('');
         
-        pagesList.innerHTML = html;
+        pagesContainer.innerHTML = \`<div class="pages-grid">\${pagesHTML}</div>\`;
     }
 
     // Edit page
@@ -1014,6 +1100,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             pageStatus.value = page.published ? 'published' : 'draft';
+            pagePrivacy.value = page.privacy || 'public';
             htmlEditor.setValue(page.htmlContent);
             
             // Preview
@@ -1083,6 +1170,21 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
+    // Copy page link to clipboard
+    window.copyPageLink = function(pageId) {
+        const pageUrl = \`\${window.location.origin}/p/\${pageId}\`;
+        
+        // Create a temporary input to copy the text
+        const tempInput = document.createElement('input');
+        tempInput.value = pageUrl;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+        
+        alert('تم نسخ الرابط بنجاح');
+    };
+
     // Delete page
     window.deletePage = function(pageId) {
         if (confirm('هل أنت متأكد من حذف هذه الصفحة؟')) {
@@ -1093,6 +1195,11 @@ document.addEventListener('DOMContentLoaded', function() {
             loadSavedPages();
         }
     };
+
+    // Generate a unique ID for pages
+    function generateUniqueId() {
+        return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+    }
 
     // Initialize analytics charts
     function initializeCharts() {
@@ -1411,6 +1518,158 @@ document.addEventListener('DOMContentLoaded', function() {
             'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
             'Access-Control-Allow-Headers': 'Content-Type',
           },
+        });
+      }
+
+      // Handle permanent page links
+      if (url.pathname.startsWith('/p/')) {
+        const pageId = url.pathname.replace('/p/', '');
+        
+        // In a real application, this would fetch the page from a database
+        // For now, we'll use localStorage data that would be stored client-side
+        return new Response(`
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحميل الصفحة...</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        .page-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .error-container {
+            text-align: center;
+            padding: 50px 20px;
+        }
+        .error-container h1 {
+            color: #e74c3c;
+            margin-bottom: 20px;
+        }
+        .loading {
+            text-align: center;
+            padding: 50px 0;
+        }
+        .loading-spinner {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .page-footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 0.9rem;
+            color: #666;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <div class="loading" id="loading">
+            <div class="loading-spinner"></div>
+            <p>يتم تحميل الصفحة...</p>
+        </div>
+        
+        <div id="page-content" style="display: none;"></div>
+        
+        <div class="error-container" id="error-container" style="display: none;">
+            <h1>عذراً، لم يتم العثور على الصفحة</h1>
+            <p>قد تكون الصفحة غير موجودة أو تم حذفها أو أنها خاصة.</p>
+            <a href="/" style="display: inline-block; padding: 10px 15px; background-color: #3498db; color: white; text-decoration: none; border-radius: 4px;">العودة للرئيسية</a>
+        </div>
+        
+        <div class="page-footer">
+            <p>تم إنشاء هذه الصفحة باستخدام <a href="/" style="color: #3498db; text-decoration: none;">صفحتك</a></p>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const pageId = '${pageId}';
+            const pageContent = document.getElementById('page-content');
+            const loading = document.getElementById('loading');
+            const errorContainer = document.getElementById('error-container');
+            
+            // In a real application, this would be an API call to a database
+            // For demo, we'll just try to load from localStorage
+            function loadPage() {
+                try {
+                    // Try to get the page from localStorage
+                    const pages = JSON.parse(localStorage.getItem('pages') || '[]');
+                    const page = pages.find(p => p.id === pageId);
+                    
+                    setTimeout(() => {
+                        if (page) {
+                            // Page found, display it
+                            document.title = page.title;
+                            pageContent.innerHTML = page.htmlContent;
+                            pageContent.style.display = 'block';
+                            loading.style.display = 'none';
+                            
+                            // Increment view count
+                            page.views = (page.views || 0) + 1;
+                            localStorage.setItem('pages', JSON.stringify(pages));
+                        } else {
+                            // Page not found
+                            errorContainer.style.display = 'block';
+                            loading.style.display = 'none';
+                        }
+                    }, 1000); // Simulate loading delay
+                } catch (error) {
+                    console.error('Error loading page:', error);
+                    errorContainer.style.display = 'block';
+                    loading.style.display = 'none';
+                }
+            }
+            
+            // Call API to get page data 
+            // Use fetch in a real application
+            loadPage();
+            
+            // In a real application, we would use an API call instead
+            // fetch('/api/pages/' + pageId)
+            //     .then(response => {
+            //         if (!response.ok) throw new Error('Page not found');
+            //         return response.json();
+            //     })
+            //     .then(page => {
+            //         document.title = page.title;
+            //         pageContent.innerHTML = page.htmlContent;
+            //         pageContent.style.display = 'block';
+            //         loading.style.display = 'none';
+            //     })
+            //     .catch(error => {
+            //         console.error('Error loading page:', error);
+            //         errorContainer.style.display = 'block';
+            //         loading.style.display = 'none';
+            //     });
+        });
+    </script>
+</body>
+</html>
+        `, {
+          headers: { 'Content-Type': 'text/html' },
         });
       }
 
