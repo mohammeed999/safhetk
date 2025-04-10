@@ -742,7 +742,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Add active class to current tab
             button.classList.add('active');
-            document.getElementById(`${tabName}-tab`).classList.add('active');
+            document.getElementById(\`\${tabName}-tab\`).classList.add('active');
             
             // Load data for specific tabs
             if (tabName === 'pages') {
