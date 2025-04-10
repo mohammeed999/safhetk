@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صفحتك - لوحة التحكم</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/monokai.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>لوحة تحكم صفحتك</h1>
+        </header>
+        
+        <main>
+            <div class="editor-section">
+                <div class="form-group">
+                    <label for="page-title">عنوان الصفحة:</label>
+                    <input type="text" id="page-title" placeholder="أدخل عنوان الصفحة">
+                </div>
+                
+                <div class="form-group">
+                    <label for="page-category">تصنيف الصفحة:</label>
+                    <select id="page-category">
+                        <option value="main">الصفحة الرئيسية</option>
+                        <option value="blog">المدونة</option>
+                        <option value="products">المنتجات</option>
+                        <option value="services">الخدمات</option>
+                        <option value="about">من نحن</option>
+                        <option value="contact">اتصل بنا</option>
+                        <option value="custom">تصنيف مخصص</option>
+                    </select>
+                    <input type="text" id="custom-category" placeholder="أدخل التصنيف المخصص" style="display: none;">
+                </div>
+                
+                <div class="form-group">
+                    <label for="page-url">مسار الصفحة (URL):</label>
+                    <input type="text" id="page-url" placeholder="مثال: about-us">
+                </div>
+                
+                <div class="form-group">
+                    <label for="html-editor">أدخل كود HTML:</label>
+                    <textarea id="html-editor"></textarea>
+                </div>
+                
+                <div class="button-group">
+                    <button id="preview-btn" class="btn primary">معاينة</button>
+                    <button id="save-btn" class="btn success">حفظ ونشر</button>
+                    <button id="clear-btn" class="btn danger">مسح</button>
+                </div>
+            </div>
+            
+            <div class="preview-section">
+                <h2>معاينة الصفحة</h2>
+                <div class="preview-container">
+                    <iframe id="preview-frame"></iframe>
+                </div>
+            </div>
+        </main>
+        
+        <div id="saved-pages">
+            <h2>الصفحات المحفوظة</h2>
+            <div class="pages-list" id="pages-list">
+                <!-- Pages will be listed here dynamically -->
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/css/css.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

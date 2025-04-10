@@ -1,0 +1,12 @@
+{
+  "name": "safhetk",
+  "version": "1.0.0",
+  "description": "HTML Content Management Web Application",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
