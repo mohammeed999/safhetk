@@ -3,76 +3,221 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>صفحتك - لوحة التحكم</title>
+    <title>إبداعي - منصة إنشاء المواقع بسهولة</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/monokai.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>لوحة تحكم صفحتك</h1>
+            <h1>إبداعي <span class="logo-accent">| </span><span class="logo-subtitle">صمم موقعك بسهولة</span></h1>
+            <p class="header-subtitle">منصة متكاملة للمبدعين لإنشاء وإدارة مواقعهم بشكل احترافي</p>
+            
+            <div class="nav-tabs">
+                <button class="tab-btn active" data-tab="editor"><i class="fa-solid fa-code"></i> محرر الصفحات</button>
+                <button class="tab-btn" data-tab="templates"><i class="fa-solid fa-layer-group"></i> القوالب</button>
+                <button class="tab-btn" data-tab="pages"><i class="fa-solid fa-file"></i> الصفحات</button>
+                <button class="tab-btn" data-tab="codeviewer"><i class="fa-solid fa-folder-tree"></i> عارض الأكواد</button>
+            </div>
         </header>
         
         <main>
-            <div class="editor-section">
-                <div class="form-group">
-                    <label for="page-title">عنوان الصفحة:</label>
-                    <input type="text" id="page-title" placeholder="أدخل عنوان الصفحة">
+            <div id="editor-tab" class="tab-content active">
+                <div class="editor-section">
+                    <div class="form-group">
+                        <label for="page-title"><i class="fa-solid fa-heading"></i> عنوان الصفحة:</label>
+                        <input type="text" id="page-title" placeholder="أدخل عنوان الصفحة">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="page-category"><i class="fa-solid fa-tags"></i> تصنيف الصفحة:</label>
+                        <select id="page-category">
+                            <option value="main">الصفحة الرئيسية</option>
+                            <option value="blog">المدونة</option>
+                            <option value="products">المنتجات</option>
+                            <option value="services">الخدمات</option>
+                            <option value="about">من نحن</option>
+                            <option value="contact">اتصل بنا</option>
+                            <option value="custom">تصنيف مخصص</option>
+                        </select>
+                        <input type="text" id="custom-category" placeholder="أدخل التصنيف المخصص" style="display: none;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="page-url"><i class="fa-solid fa-link"></i> مسار الصفحة (URL):</label>
+                        <input type="text" id="page-url" placeholder="مثال: about-us">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="page-status"><i class="fa-solid fa-toggle-on"></i> حالة الصفحة:</label>
+                        <select id="page-status">
+                            <option value="published">منشورة</option>
+                            <option value="draft">مسودة</option>
+                            <option value="private">خاصة</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="html-editor"><i class="fa-solid fa-code"></i> أدخل كود HTML:</label>
+                        <textarea id="html-editor"></textarea>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button id="preview-btn" class="btn primary"><i class="fa-solid fa-eye"></i> معاينة</button>
+                        <button id="save-btn" class="btn success"><i class="fa-solid fa-floppy-disk"></i> حفظ ونشر</button>
+                        <button id="clear-btn" class="btn danger"><i class="fa-solid fa-trash"></i> مسح</button>
+                    </div>
                 </div>
                 
-                <div class="form-group">
-                    <label for="page-category">تصنيف الصفحة:</label>
-                    <select id="page-category">
-                        <option value="main">الصفحة الرئيسية</option>
-                        <option value="blog">المدونة</option>
-                        <option value="products">المنتجات</option>
-                        <option value="services">الخدمات</option>
-                        <option value="about">من نحن</option>
-                        <option value="contact">اتصل بنا</option>
-                        <option value="custom">تصنيف مخصص</option>
-                    </select>
-                    <input type="text" id="custom-category" placeholder="أدخل التصنيف المخصص" style="display: none;">
-                </div>
-                
-                <div class="form-group">
-                    <label for="page-url">مسار الصفحة (URL):</label>
-                    <input type="text" id="page-url" placeholder="مثال: about-us">
-                </div>
-                
-                <div class="form-group">
-                    <label for="html-editor">أدخل كود HTML:</label>
-                    <textarea id="html-editor"></textarea>
-                </div>
-                
-                <div class="button-group">
-                    <button id="preview-btn" class="btn primary">معاينة</button>
-                    <button id="save-btn" class="btn success">حفظ ونشر</button>
-                    <button id="clear-btn" class="btn danger">مسح</button>
+                <div class="preview-section">
+                    <h2><i class="fa-solid fa-display"></i> معاينة الصفحة</h2>
+                    <div class="preview-controls">
+                        <button class="preview-device-btn active" data-device="desktop"><i class="fa-solid fa-desktop"></i></button>
+                        <button class="preview-device-btn" data-device="tablet"><i class="fa-solid fa-tablet-screen-button"></i></button>
+                        <button class="preview-device-btn" data-device="mobile"><i class="fa-solid fa-mobile-screen-button"></i></button>
+                    </div>
+                    <div class="preview-container">
+                        <iframe id="preview-frame"></iframe>
+                    </div>
                 </div>
             </div>
             
-            <div class="preview-section">
-                <h2>معاينة الصفحة</h2>
-                <div class="preview-container">
-                    <iframe id="preview-frame"></iframe>
+            <div id="templates-tab" class="tab-content">
+                <div class="templates-section">
+                    <h2><i class="fa-solid fa-layer-group"></i> قوالب جاهزة</h2>
+                    <p>يمكنك الاختيار من بين مجموعة من القوالب الجاهزة لإطلاق موقعك بشكل سريع</p>
+                    
+                    <div class="templates-list">
+                        <div class="template-card" data-template="landing">
+                            <h3>صفحة هبوط</h3>
+                            <p>قالب مثالي لصفحات الهبوط للتسويق وعرض المنتجات</p>
+                            <div class="template-preview">
+                                <i class="fa-solid fa-image fa-4x"></i>
+                            </div>
+                            <div class="template-card-actions">
+                                <button class="btn primary"><i class="fa-solid fa-check"></i> استخدام</button>
+                            </div>
+                        </div>
+                        
+                        <div class="template-card" data-template="business">
+                            <h3>موقع شركة</h3>
+                            <p>قالب احترافي للشركات والمؤسسات</p>
+                            <div class="template-preview">
+                                <i class="fa-solid fa-image fa-4x"></i>
+                            </div>
+                            <div class="template-card-actions">
+                                <button class="btn primary"><i class="fa-solid fa-check"></i> استخدام</button>
+                            </div>
+                        </div>
+                        
+                        <div class="template-card" data-template="portfolio">
+                            <h3>معرض أعمال</h3>
+                            <p>قالب لعرض الأعمال والمشاريع بطريقة جذابة</p>
+                            <div class="template-preview">
+                                <i class="fa-solid fa-image fa-4x"></i>
+                            </div>
+                            <div class="template-card-actions">
+                                <button class="btn primary"><i class="fa-solid fa-check"></i> استخدام</button>
+                            </div>
+                        </div>
+                        
+                        <div class="template-card" data-template="blog">
+                            <h3>مدونة</h3>
+                            <p>قالب متكامل لإنشاء مدونة احترافية</p>
+                            <div class="template-preview">
+                                <i class="fa-solid fa-image fa-4x"></i>
+                            </div>
+                            <div class="template-card-actions">
+                                <button class="btn primary"><i class="fa-solid fa-check"></i> استخدام</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="pages-tab" class="tab-content">
+                <div id="saved-pages">
+                    <h2><i class="fa-solid fa-file"></i> الصفحات المحفوظة</h2>
+                    <div class="pages-search">
+                        <input type="text" id="pages-search-input" placeholder="ابحث في الصفحات...">
+                        <select id="pages-filter">
+                            <option value="all">جميع الصفحات</option>
+                            <option value="main">الصفحة الرئيسية</option>
+                            <option value="blog">المدونة</option>
+                            <option value="products">المنتجات</option>
+                            <option value="services">الخدمات</option>
+                            <option value="about">من نحن</option>
+                            <option value="contact">اتصل بنا</option>
+                        </select>
+                    </div>
+                    <div class="pages-list animated" id="pages-list">
+                        <!-- Pages will be listed here dynamically -->
+                    </div>
+                </div>
+            </div>
+            
+            <div id="codeviewer-tab" class="tab-content">
+                <div class="code-viewer-section">
+                    <h2><i class="fa-solid fa-folder-tree"></i> عارض الأكواد</h2>
+                    <p>قم برفع ملفات الأكواد لمشروعك (ZIP) وسيتم عرضها بشكل مباشر</p>
+                    
+                    <div class="upload-area" id="upload-area">
+                        <div class="upload-icon">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                        </div>
+                        <div class="upload-text">اسحب وأفلت ملف ZIP هنا أو انقر للاختيار</div>
+                        <input type="file" id="file-input" style="display: none;" accept=".zip">
+                    </div>
+                    
+                    <div class="processing-spinner" id="processing-spinner">
+                        <div class="spinner"></div>
+                        <p>جاري معالجة الملفات...</p>
+                    </div>
+                    
+                    <div class="project-info" id="project-info" style="display: none;">
+                        <div class="form-group">
+                            <label for="project-name"><i class="fa-solid fa-heading"></i> اسم المشروع:</label>
+                            <input type="text" id="project-name" placeholder="أدخل اسم المشروع">
+                        </div>
+                    </div>
+                    
+                    <div class="file-explorer" id="file-explorer" style="display: none;">
+                        <div class="file-explorer-header">
+                            <h3><i class="fa-solid fa-folder-open"></i> استكشاف الملفات</h3>
+                        </div>
+                        <div class="file-tree" id="file-tree"></div>
+                        <div class="file-content" id="file-content">
+                            <p class="file-placeholder">اختر ملفاً لعرض محتواه</p>
+                        </div>
+                        <div class="button-group">
+                            <button id="generate-preview-btn" class="btn primary"><i class="fa-solid fa-eye"></i> إنشاء معاينة</button>
+                            <button id="save-project-btn" class="btn success"><i class="fa-solid fa-floppy-disk"></i> حفظ المشروع</button>
+                        </div>
+                    </div>
+                    
+                    <div class="saved-projects" id="saved-projects">
+                        <h3><i class="fa-solid fa-box-archive"></i> المشاريع المحفوظة</h3>
+                        <div class="projects-list" id="projects-list">
+                            <!-- Projects will be listed here dynamically -->
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
-        
-        <div id="saved-pages">
-            <h2>الصفحات المحفوظة</h2>
-            <div class="pages-list" id="pages-list">
-                <!-- Pages will be listed here dynamically -->
-            </div>
-        </div>
     </div>
+    
+    <button class="dark-mode-toggle" id="dark-mode-toggle">
+        <i class="fa-solid fa-moon"></i>
+    </button>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/htmlmixed/htmlmixed.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/xml/xml.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
