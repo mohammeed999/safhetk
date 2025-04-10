@@ -1,12 +1,18 @@
 name = "safhetk"
 main = "server.js"
-compatibility_date = "2024-01-01"
+type = "webpack"
+account_id = "YOUR_ACCOUNT_ID" # استبدل هذا برقم حساب Cloudflare الخاص بك
+workers_dev = true
+route = ""
+zone_id = ""
+compatibility_date = "2024-04-10"
 
 [site]
-bucket = "./"
+bucket = "."
+entry-point = "./"
 
 [build]
-command = "npm install"
+command = ""
 
 [env.production]
 name = "safhetk-prod"
