@@ -1813,10 +1813,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         const folderItem = document.createElement('div');
                         folderItem.className = 'file-tree-item';
-                        folderItem.innerHTML = `
-                            <span class="file-tree-icon">📁</span>
-                            <span>${item}</span>
-                        `;
+                        folderItem.innerHTML = 
+                            '<span class="file-tree-icon">📁</span>' +
+                            '<span>' + item + '</span>';
                         
                         const folderContent = document.createElement('div');
                         folderContent.className = 'file-tree-folder-content';
@@ -1850,10 +1849,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         else if (extension === 'js') fileIcon = '⚙️';
                         else if (['jpg', 'jpeg', 'png', 'gif', 'svg'].includes(extension)) fileIcon = '🖼️';
                         
-                        fileEl.innerHTML = `
-                            <span class="file-tree-icon">${fileIcon}</span>
-                            <span>${item}</span>
-                        `;
+                        fileEl.innerHTML = 
+                            '<span class="file-tree-icon">' + fileIcon + '</span>' +
+                            '<span>' + item + '</span>';
                         
                         fileEl.addEventListener('click', function() {
                             displayFile(obj[item]);
@@ -2014,17 +2012,16 @@ document.addEventListener('DOMContentLoaded', function() {
             let html = '';
             projects.forEach(project => {
                 const date = new Date(project.date);
-                html += `
-                    <div class="project-card">
-                        <h4>${project.name}</h4>
-                        <p>عدد الملفات: ${Object.keys(project.files).length}</p>
-                        <p>تاريخ الحفظ: ${date.toLocaleDateString('ar-SA')}</p>
-                        <div class="project-card-actions">
-                            <button class="btn primary" onclick="loadProject('${project.id}')">فتح</button>
-                            <button class="btn danger" onclick="deleteProject('${project.id}')">حذف</button>
-                        </div>
-                    </div>
-                `;
+                html += 
+                    '<div class="project-card">' +
+                    '<h4>' + project.name + '</h4>' +
+                    '<p>عدد الملفات: ' + Object.keys(project.files).length + '</p>' +
+                    '<p>تاريخ الحفظ: ' + date.toLocaleDateString('ar-SA') + '</p>' +
+                    '<div class="project-card-actions">' +
+                    '<button class="btn primary" onclick="loadProject(\'' + project.id + '\')">فتح</button>' +
+                    '<button class="btn danger" onclick="deleteProject(\'' + project.id + '\')">حذف</button>' +
+                    '</div>' +
+                    '</div>';
             });
             
             projectsGrid.innerHTML = html;
